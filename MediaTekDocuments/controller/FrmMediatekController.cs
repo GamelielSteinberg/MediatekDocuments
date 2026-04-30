@@ -96,5 +96,23 @@ namespace MediaTekDocuments.controller
         {
             return access.CreerExemplaire(exemplaire);
         }
+        /// <summary>
+        /// getter sur la liste des commandes
+        /// </summary>
+        /// <returns>Liste d'objets CommandeDeDocument</returns>
+        public List<CommandeDeDocument> GetAllCommandesDeDocuments()
+        {
+            return access.GetAllCommandesDeDocuments();
+        }
+
+        public List<CommandeDeDocument> GetCommandesDeDocumentsByIdDocument(string idDocument)
+        {
+            return access.GetCommandesDeDocumentsByIdDocument(idDocument);
+        }
+
+        public bool PasserCommande(CommandeDeDocument commande)
+        {
+            return access.PasserCommande(commande);
+        }
     }
 }

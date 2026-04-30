@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using MediaTekDocuments.model;
+using System.Configuration;
+using System.Linq;
+using System.Xml.Linq;
 using MediaTekDocuments.manager;
+using MediaTekDocuments.model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
-using System.Configuration;
-using System.Linq;
 
 namespace MediaTekDocuments.dal
 {
@@ -141,6 +142,47 @@ namespace MediaTekDocuments.dal
             String jsonIdDocument = convertToJson("id", idDocument);
             List<Exemplaire> lesExemplaires = TraitementRecup<Exemplaire>(GET, "exemplaire/" + jsonIdDocument, null);
             return lesExemplaires;
+        }
+
+        /// <summary>
+        /// Retourne toutes les commandes de documents à partir de la BDD
+        /// </summary>
+        /// <returns>Liste d'objets CommandeDeDocument</returns>
+        public List<CommandeDeDocument> GetAllCommandesDeDocuments()
+        {
+            List<CommandeDeDocument> lesCommandesDeDocuments = TraitementRecup<CommandeDeDocument>(GET, "commandededocument", null);
+            return lesCommandesDeDocuments;
+        }
+
+        /// <summary>
+        /// Retourne les commandes de documents correspondant au document donné à partir de la BDD
+        /// </summary>
+        /// <returns>Liste d'objets CommandeDeDocument</returns>
+        public List<CommandeDeDocument> GetCommandesDeDocumentsByIdDocument(string idDocument)
+        {
+            String jsonIdDocument = convertToJson("id", idDocument);
+            List<CommandeDeDocument> lesCommandesDeDocuments = TraitementRecup<CommandeDeDocument>(GET, "commandededocument/"+jsonIdDocument, null);
+            return lesCommandesDeDocuments;
+        }
+
+        /// <summary>
+        /// ecriture d'une commande en base de données
+        /// </summary>
+        /// <param name="commande">commande à insérer</param>
+        /// <returns>true si l'insertion a pu se faire (retour != null)</returns>
+        public bool PasserCommande(CommandeDeDocument commande)
+        {
+            String jsonCommande = JsonConvert.SerializeObject(commande, new CustomDateTimeConverter());
+            try
+            {
+                List<CommandeDeDocument> liste = TraitementRecup<CommandeDeDocument>(POST, "commandededocument", "champs=" + jsonCommande);
+                return (liste != null);                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return false;
         }
 
         /// <summary>

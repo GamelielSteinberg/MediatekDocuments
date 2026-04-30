@@ -150,25 +150,49 @@ namespace MediaTekDocuments.view
         /// Affichage des informations du livre sélectionné
         /// </summary>
         /// <param name="livre">le livre</param>
-        private void AfficheLivresInfos(Livre livre)
+        private void AfficheInfosLivre(Livre livre, string onglet="livres")
         {
-            txbLivresAuteur.Text = livre.Auteur;
-            txbLivresCollection.Text = livre.Collection;
-            txbLivresImage.Text = livre.Image;
-            txbLivresIsbn.Text = livre.Isbn;
-            txbLivresNumero.Text = livre.Id;
-            txbLivresGenre.Text = livre.Genre;
-            txbLivresPublic.Text = livre.Public;
-            txbLivresRayon.Text = livre.Rayon;
-            txbLivresTitre.Text = livre.Titre;
-            string image = livre.Image;
-            try
+            if (onglet.Equals("commandes"))
             {
-                pcbLivresImage.Image = Image.FromFile(image);
+                txbCommandesLivreAuteur.Text = livre.Auteur;
+                txbCommandesLivreCollection.Text = livre.Collection;
+                txbCommandesLivreImage.Text = livre.Image;
+                txbCommandesLivreIsbn.Text = livre.Isbn;
+                txbCommandesLivreNumero.Text = livre.Id;
+                txbCommandesLivreGenre.Text = livre.Genre;
+                txbCommandesLivrePublic.Text = livre.Public;
+                txbCommandesLivreRayon.Text = livre.Rayon;
+                txbCommandesLivreTitre.Text = livre.Titre;
+                string image = livre.Image;
+                try
+                {
+                    pcbCommandesLivreImage.Image = Image.FromFile(image);
+                }
+                catch
+                {
+                    pcbCommandesLivreImage.Image = null;
+                }
             }
-            catch
+            else
             {
-                pcbLivresImage.Image = null;
+                txbLivresAuteur.Text = livre.Auteur;
+                txbLivresCollection.Text = livre.Collection;
+                txbLivresImage.Text = livre.Image;
+                txbLivresIsbn.Text = livre.Isbn;
+                txbLivresNumero.Text = livre.Id;
+                txbLivresGenre.Text = livre.Genre;
+                txbLivresPublic.Text = livre.Public;
+                txbLivresRayon.Text = livre.Rayon;
+                txbLivresTitre.Text = livre.Titre;
+                string image = livre.Image;
+                try
+                {
+                    pcbLivresImage.Image = Image.FromFile(image);
+                }
+                catch
+                {
+                    pcbLivresImage.Image = null;
+                }
             }
         }
 
@@ -259,7 +283,7 @@ namespace MediaTekDocuments.view
                 try
                 {
                     Livre livre = (Livre)bdgLivresListe.List[bdgLivresListe.Position];
-                    AfficheLivresInfos(livre);
+                    AfficheInfosLivre(livre);
                 }
                 catch
                 {
@@ -989,7 +1013,7 @@ namespace MediaTekDocuments.view
         }
         #endregion
 
-        #region Onglet Paarutions
+        #region Onglet Parutions
         private readonly BindingSource bdgExemplairesListe = new BindingSource();
         private List<Exemplaire> lesExemplaires = new List<Exemplaire>();
         const string ETATNEUF = "00001";
@@ -1238,6 +1262,141 @@ namespace MediaTekDocuments.view
                 pcbReceptionExemplaireRevueImage.Image = null;
             }
         }
+        #endregion
+
+        #region Onglet Commandes
+
+        #region Onglet Gestion des commandes
+
+        private readonly BindingSource bdgCommandesListe = new BindingSource();
+        private List<CommandeDeDocument> lesCommandes = new List<CommandeDeDocument>();
+
+        /// <summary>
+        /// Ouverture de l'onglet CommandeGestion :
+        /// apppel des méthodes pour afficher la liste des commandes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void tabCommandes_Enter(object sender, EventArgs e)
+        {
+            MessageBox.Show("Enter déclenché");
+            lesCommandes = controller.GetAllCommandesDeDocuments();
+            RemplirCommandesListe(lesCommandes);
+            MessageBox.Show(lesCommandes.Count.ToString());//= 0 mais normal car bdd vide
+        }
+
+        /// <summary>
+        /// Remplit le dategrid avec la liste reçue en paramètre
+        /// </summary>
+        /// <param name="livres">liste de livres</param>
+        private void RemplirCommandesListe(List<CommandeDeDocument> commandes)
+        {
+            bdgCommandesListe.DataSource = commandes;
+            dgvCommandesListe.DataSource = bdgCommandesListe;
+            dgvCommandesListe.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            dgvCommandesListe.Columns["id"].DisplayIndex = 0;
+            dgvCommandesListe.Columns["titreDocument"].DisplayIndex = 1;
+            dgvCommandesListe.Columns["idDocument"].Visible = false;
+            dgvCommandesListe.Columns["document"].Visible = false;
+            dgvCommandesListe.Columns["idEtape"].Visible = false;
+            dgvCommandesListe.Columns["id"].HeaderText = "Id";
+            dgvCommandesListe.Columns["titreDocument"].HeaderText = "Titre";
+            dgvCommandesListe.Columns["dateCommande"].HeaderText = "Date de commande";
+            dgvCommandesListe.Columns["etape"].HeaderText = "Suivi";
+        }
+
+        private List<CommandeDeDocument> ColumnSortingCommandes(List<CommandeDeDocument> commandes, string titreColonne, string order = "ASC")
+        {
+            List<CommandeDeDocument> sortedList = new List<CommandeDeDocument>();
+            switch (titreColonne)
+            {
+                case "Id":
+                        sortedList = commandes.OrderBy(o => o.id).ToList();
+                    break;
+                case "Titre":
+                    sortedList = commandes.OrderBy(o => o.titreDocument).ToList();
+                    break;
+                case "Date de commande":
+                    if (order.Equals("DESC"))
+                    {
+                        sortedList = commandes.OrderByDescending(o => o.dateCommande).ToList();
+                        break;
+                    }
+                    sortedList = commandes.OrderBy(o => o.dateCommande).ToList();
+                    break;
+                case "Suivi":
+                    sortedList = commandes.OrderBy(o => o.etape).ToList();
+                    break;
+            }
+            return sortedList;
+        }
+
+        /// <summary>
+        /// Tri sur les colonnes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void dgvCommandesListe_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            string titreColonne = dgvCommandesListe.Columns[e.ColumnIndex].HeaderText;
+            RemplirCommandesListe(ColumnSortingCommandes(lesCommandes, titreColonne));
+        }
+
+        /// <summary>
+        /// Recherche et affichage du livre dont on a saisi le numéro.
+        /// Si non trouvé, affichage d'un MessageBox.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnCommandesNumRecherche_Click(object sender, EventArgs e)
+        {
+            if (!txbCommandesNumRecherche.Text.Equals(""))
+            {
+                Livre livre = lesLivres.Find(x => x.Id.Equals(txbCommandesNumRecherche.Text));
+                if (livre != null)
+                {
+                    AfficheInfosLivre(livre, "commandes");
+                    List<CommandeDeDocument> commandes = controller.GetCommandesDeDocumentsByIdDocument(txbCommandesNumRecherche.Text);
+                    RemplirCommandesListe(ColumnSortingCommandes(commandes, "Date de commande", "DESC"));
+                }
+                else
+                {
+                    MessageBox.Show("numéro introuvable");
+                    RemplirCommandesListe(lesCommandes);
+                }
+            }
+            else
+            {
+                RemplirCommandesListe(lesCommandes);
+            }
+        }
+
+        private void btnCommandesPasser_Click(object sender, EventArgs e)
+        {
+            string numeroDocument = txbCommandesCommandeNumero.Text;
+            string quantite = txbCommandesCommandeQuantite.Text;
+            string montant = txbCommandesCommandeMontant.Text;
+            if (numeroDocument != "" && quantite != "" && int.TryParse(quantite, out int intquantite) && montant != "" && float.TryParse(montant, out float floatmontant))
+            {
+                Livre livre = lesLivres.Find(x => x.Id.Equals(txbCommandesNumRecherche.Text));
+                if (livre != null)
+                {
+                    CommandeDeDocument commande = new CommandeDeDocument(numeroDocument, livre, quantite, montant, "1");
+                    controller.PasserCommande(commande);
+                }
+                else
+                {
+                    MessageBox.Show("numéro de document introuvable");
+                }
+            }
+            else
+            {
+                MessageBox.Show("tous les champs sont obligatoires et doivent être au bon format");
+            }
+        }
+
+        #endregion
+
         #endregion
     }
 }
