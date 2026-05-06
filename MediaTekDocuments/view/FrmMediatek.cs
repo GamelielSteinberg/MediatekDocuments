@@ -1279,10 +1279,8 @@ namespace MediaTekDocuments.view
         /// <param name="e"></param>
         private void tabCommandes_Enter(object sender, EventArgs e)
         {
-            MessageBox.Show("Enter déclenché");
             lesCommandes = controller.GetAllCommandesDeDocuments();
             RemplirCommandesListe(lesCommandes);
-            MessageBox.Show(lesCommandes.Count.ToString());//= 0 mais normal car bdd vide
         }
 
         /// <summary>
